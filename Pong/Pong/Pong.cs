@@ -1,15 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.GamerServices;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Media;
 using Pong.Models;
 
 namespace Pong
@@ -23,8 +18,22 @@ namespace Pong
         SpriteBatch _spriteBatch;
 
         private GameState _gameState;
-        private Dictionary<GameObject.Name, GameObject> _gameObjects;
-        private Dictionary<Player.Name, Player> _players;
+        private Dictionary<PlayerName, Player> _players;
+        private Dictionary<ObjectName, GameObject> _gameObjects;
+
+        public enum PlayerName
+        {
+            Player1,
+            Player2
+        }
+
+        public enum ObjectName
+        {
+            Ball,
+            Line,
+            Paddle1,
+            Paddle2
+        }
 
         public Pong()
         {
@@ -46,10 +55,10 @@ namespace Pong
             _gameState.MaxY = _graphics.GraphicsDevice.Viewport.Height;
             _gameState.Font = Content.Load<SpriteFont>("DefaultFont");
 
-            _players = new Dictionary<Player.Name, Player>
+            _players = new Dictionary<PlayerName, Player>
                 {
-                    {Player.Name.Player1, new Player(Keys.A, Keys.Z, Keys.Space)},
-                    {Player.Name.Player2, new Player(Keys.Up, Keys.Down, Keys.Space)}
+                    {PlayerName.Player1, new Player(Keys.A, Keys.Z, Keys.Space)},
+                    {PlayerName.Player2, new Player(Keys.Up, Keys.Down, Keys.Space)}
                 };
 
             base.Initialize();
@@ -68,10 +77,10 @@ namespace Pong
             var dummyTexture = new Texture2D(GraphicsDevice, 1, 1);
             dummyTexture.SetData(new[] { Color.White });
 
-            _gameObjects = new Dictionary<GameObject.Name, GameObject>
+            _gameObjects = new Dictionary<ObjectName, GameObject>
                 {
                     {
-                        GameObject.Name.Ball,
+                        ObjectName.Ball,
                         new GameObject(new Rectangle(90, 10, 15, 15), 
                                        new Vector2(rand.Next(3,5), rand.Next(3,5)), 
                                        dummyTexture, 
@@ -79,23 +88,23 @@ namespace Pong
                                        new Player())
                     },
                     {
-                        GameObject.Name.Paddle1,
+                        ObjectName.Paddle1,
                         new GameObject(new Rectangle(50, 50, 15, 100), 
                                        new Vector2(0, 5), 
                                        dummyTexture, 
                                        Color.White,
-                                       _players[Player.Name.Player1])
+                                       _players[PlayerName.Player1])
                     },
                     {
-                        GameObject.Name.Paddle2,
+                        ObjectName.Paddle2,
                         new GameObject(new Rectangle(_gameState.MaxX - 65, 50, 15, 100), 
                                        new Vector2(0, 5), 
                                        dummyTexture,
                                        Color.White, 
-                                       _players[Player.Name.Player2])
+                                       _players[PlayerName.Player2])
                     },
                     {
-                        GameObject.Name.Line,
+                        ObjectName.Line,
                         new GameObject(new Rectangle(_gameState.MaxX / 2, 0, 5, _gameState.MaxY), 
                                        new Vector2(0, 0), 
                                        dummyTexture,
@@ -128,8 +137,8 @@ namespace Pong
 
             if(!_gameState.Paused)
             {
-                UpdatePaddle(_gameObjects[GameObject.Name.Paddle1]);
-                UpdatePaddle(_gameObjects[GameObject.Name.Paddle2]);
+                UpdatePaddle(_gameObjects[ObjectName.Paddle1]);
+                UpdatePaddle(_gameObjects[ObjectName.Paddle2]);
 
                 UpdateBall();
 
@@ -152,6 +161,10 @@ namespace Pong
             {
                 _gameState.Paused = !_gameState.Paused;
             }
+            if(_gameState.CurrentKeyState.IsKeyDown(Keys.Escape))
+            {
+                Exit();
+            }
         }
 
         private void UpdatePaddle(GameObject paddle)
@@ -160,33 +173,33 @@ namespace Pong
             {
                 paddle.Position -= paddle.Speed;
                 if (paddle.Player.HasControl)
-                    _gameObjects[GameObject.Name.Ball].Position -= paddle.Speed; 
+                    _gameObjects[ObjectName.Ball].Position -= paddle.Speed; 
             }
             if (_gameState.CurrentKeyState.IsKeyDown(paddle.Player.MoveDown) && paddle.Shape.Y < _gameState.MaxY - paddle.Shape.Height)
             {
                 paddle.Position += paddle.Speed;
                 if (paddle.Player.HasControl)
-                    _gameObjects[GameObject.Name.Ball].Position += paddle.Speed; 
+                    _gameObjects[ObjectName.Ball].Position += paddle.Speed; 
             }
             if(_gameState.CurrentKeyState.IsKeyDown(paddle.Player.Shoot) && paddle.Player.HasControl)
             {
                 var rand = new Random();
-                _gameObjects[GameObject.Name.Ball].Speed = new Vector2(rand.Next(3,5), rand.Next(3,5));
+                _gameObjects[ObjectName.Ball].Speed = new Vector2(rand.Next(3,5), rand.Next(3,5));
                 paddle.Player.HasControl = false;
             }
         }
 
         private void UpdateBall()
         {
-            _gameObjects[GameObject.Name.Ball].Position += _gameObjects[GameObject.Name.Ball].Speed;
+            _gameObjects[ObjectName.Ball].Position += _gameObjects[ObjectName.Ball].Speed;
         }
 
         private bool CheckPaddleBounce()
         {
-            if (_gameObjects[GameObject.Name.Ball].Shape.Intersects(_gameObjects[GameObject.Name.Paddle1].Shape) && _gameObjects[GameObject.Name.Ball].Speed.X < 0 ||
-                _gameObjects[GameObject.Name.Ball].Shape.Intersects(_gameObjects[GameObject.Name.Paddle2].Shape) && _gameObjects[GameObject.Name.Ball].Speed.X > 0 )
+            if (_gameObjects[ObjectName.Ball].Shape.Intersects(_gameObjects[ObjectName.Paddle1].Shape) && _gameObjects[ObjectName.Ball].Speed.X < 0 ||
+                _gameObjects[ObjectName.Ball].Shape.Intersects(_gameObjects[ObjectName.Paddle2].Shape) && _gameObjects[ObjectName.Ball].Speed.X > 0 )
             {
-                _gameObjects[GameObject.Name.Ball].Speed = new Vector2(-_gameObjects[GameObject.Name.Ball].Speed.X * 1.05f, _gameObjects[GameObject.Name.Ball].Speed.Y * 1.05f);
+                _gameObjects[ObjectName.Ball].Speed = new Vector2(-_gameObjects[ObjectName.Ball].Speed.X * 1.05f, _gameObjects[ObjectName.Ball].Speed.Y * 1.05f);
                 return true;
             }
             return false;
@@ -194,7 +207,7 @@ namespace Pong
 
         private void CheckWallBounce()
         {
-            var ball = _gameObjects[GameObject.Name.Ball];
+            var ball = _gameObjects[ObjectName.Ball];
 
             if (ball.Position.Y < 0 || ball.Position.Y > _gameState.MaxY - ball.Shape.Height)
             {
@@ -202,23 +215,23 @@ namespace Pong
             }
             else if (ball.Position.X < 0)
             {
-                _players[Player.Name.Player2].Score++;
-                _players[Player.Name.Player1].HasControl = true;
-                ResetBall(ball, GameObject.Name.Paddle1);
+                _players[PlayerName.Player2].Score++;
+                _players[PlayerName.Player1].HasControl = true;
+                ResetBall(ball, ObjectName.Paddle1);
             }
             else if (ball.Position.X > _gameState.MaxX - ball.Shape.Width)
             {
-                _players[Player.Name.Player1].Score++;
-                _players[Player.Name.Player2].HasControl = true;
-                ResetBall(ball, GameObject.Name.Paddle2);
+                _players[PlayerName.Player1].Score++;
+                _players[PlayerName.Player2].HasControl = true;
+                ResetBall(ball, ObjectName.Paddle2);
             }
         }
 
-        private void ResetBall(GameObject ball, GameObject.Name paddle)
+        private void ResetBall(GameObject ball, ObjectName paddle)
         {
             ball.Speed = new Vector2(0, 0);
             ball.Position = _gameObjects[paddle].Position +
-                new Vector2(paddle == GameObject.Name.Paddle1 ? _gameObjects[paddle].Shape.Width : -ball.Shape.Width,
+                new Vector2(paddle == ObjectName.Paddle1 ? _gameObjects[paddle].Shape.Width : -ball.Shape.Width,
                                         _gameObjects[paddle].Shape.Height / 2.0f - ball.Shape.Height / 2.0f);
         }
 
@@ -249,10 +262,10 @@ namespace Pong
         private void ScoreDisplay()
         {
             _spriteBatch.DrawString(_gameState.Font,
-                                    _players[Player.Name.Player1].Score.ToString(CultureInfo.InvariantCulture),
+                                    _players[PlayerName.Player1].Score.ToString(CultureInfo.InvariantCulture),
                                     new Vector2(_gameState.MaxX / 2 - 30, 50), Color.White);
             _spriteBatch.DrawString(_gameState.Font,
-                                    _players[Player.Name.Player2].Score.ToString(CultureInfo.InvariantCulture),
+                                    _players[PlayerName.Player2].Score.ToString(CultureInfo.InvariantCulture),
                                     new Vector2(_gameState.MaxX / 2 + 25, 50), Color.White);
         }
 
@@ -261,10 +274,10 @@ namespace Pong
             if (_gameState.ShowStats)
             {
                 var ballStats = new StringBuilder();
-                ballStats.Append("X Speed: " + _gameObjects[GameObject.Name.Ball].Speed.X.ToString(CultureInfo.InvariantCulture));
-                ballStats.Append("\nY Speed: " + _gameObjects[GameObject.Name.Ball].Speed.Y.ToString(CultureInfo.InvariantCulture));
-                ballStats.Append("\nX Pos: " + _gameObjects[GameObject.Name.Ball].Position.X.ToString(CultureInfo.InvariantCulture));
-                ballStats.Append("\nY Pos: " + _gameObjects[GameObject.Name.Ball].Position.Y.ToString(CultureInfo.InvariantCulture));
+                ballStats.Append("X Speed: " + _gameObjects[ObjectName.Ball].Speed.X.ToString(CultureInfo.InvariantCulture));
+                ballStats.Append("\nY Speed: " + _gameObjects[ObjectName.Ball].Speed.Y.ToString(CultureInfo.InvariantCulture));
+                ballStats.Append("\nX Pos: " + _gameObjects[ObjectName.Ball].Position.X.ToString(CultureInfo.InvariantCulture));
+                ballStats.Append("\nY Pos: " + _gameObjects[ObjectName.Ball].Position.Y.ToString(CultureInfo.InvariantCulture));
                 _spriteBatch.DrawString(_gameState.Font, ballStats, new Vector2(5, 5), Color.White);
             }
         }

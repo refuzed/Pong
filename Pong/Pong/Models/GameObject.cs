@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Pong.Models
@@ -38,13 +34,7 @@ namespace Pong.Models
             }
         }
 
-        public enum Name
-        {
-            Ball,
-            Line,
-            Paddle1,
-            Paddle2
-        }
+
 
         public GameObject(Rectangle shape, Vector2 speed, Texture2D texture, Color color, Player player)
         {

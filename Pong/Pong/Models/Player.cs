@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Microsoft.Xna.Framework.Input;
+﻿using Microsoft.Xna.Framework.Input;
 
 namespace Pong.Models
 {
@@ -14,11 +10,7 @@ namespace Pong.Models
         public int Score { get; set; }
         public bool HasControl { get; set; }
 
-        public enum Name
-        {
-            Player1,
-            Player2
-        }
+
 
         public Player()
         {

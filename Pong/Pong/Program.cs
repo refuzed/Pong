@@ -1,5 +1,3 @@
-using System;
-
 namespace Pong
 {
 #if WINDOWS || XBOX
@@ -10,7 +8,7 @@ namespace Pong
         /// </summary>
         static void Main(string[] args)
         {
-            using (Pong game = new Pong())
+            using (var game = new Pong())
             {
                 game.Run();
             }
